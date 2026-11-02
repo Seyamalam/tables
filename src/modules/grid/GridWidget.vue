@@ -70,7 +70,7 @@ import { mapActions, mapState } from 'pinia'
 import { useTablesStore } from '../../store/store.js'
 import NamedIcon from '../../shared/components/ncIconPicker/NamedIcon.vue'
 import { GRID_COLUMNS, GRID_MIN_WIDTH, findWidgetType, widgetTarget } from './gridLayout.js'
-import { WIDGET_TYPE_DATA, WIDGET_TYPE_TABLES, getWidgetComponent } from './widgetRegistry.js'
+import { WIDGET_TYPE_DATA, WIDGET_TYPE_TABLES, WIDGET_TYPE_TABS, getWidgetComponent } from './widgetRegistry.js'
 
 /**
  * The card around one widget: its optional title, icon and description, its edit actions and the
@@ -164,6 +164,9 @@ export default {
 			}
 			if (this.widget.type === WIDGET_TYPE_TABLES) {
 				return { nodes: this.nodes }
+			}
+			if (this.widget.type === WIDGET_TYPE_TABS) {
+				return { widget: this.widget, settings: this.widget.settings, editable: this.editable }
 			}
 			return { settings: this.widget.settings, editable: this.editable }
 		},
