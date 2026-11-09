@@ -596,10 +596,10 @@ final class ContextServiceTest extends TestCase {
 		});
 		$this->pageMapper->expects($this->never())->method('update');
 
-		$this->service->importContext($this->importTable(), ['name' => 'Projects', 'nodes' => [['id' => 1, 'node_id' => 4, 'node_type' => 0]], 'pages' => [
+		$this->service->importContext(['name' => 'Projects', 'nodes' => [['id' => 1, 'node_id' => 4, 'node_type' => 0]], 'pages' => [
 			['id' => 1, 'page_type' => Page::TYPE_STARTPAGE, 'title' => 'Welcome', 'icon' => 'star', 'description' => 'Start here'],
 			['id' => 2, 'page_type' => Page::TYPE_GRID, 'technical_name' => 'overview', 'title' => '  Overview ', 'icon' => 'no-such-icon', 'description' => str_repeat('a', 2001)],
-		]], 4);
+		]], 'user-1', [4 => 40], []);
 
 		self::assertSame(
 			[['Welcome', 'star', 'Start here'], ['Overview', null, null]],
@@ -616,16 +616,9 @@ final class ContextServiceTest extends TestCase {
 		$this->dbConnection->expects($this->never())->method('commit');
 
 		$this->expectException(\RuntimeException::class);
-		$this->service->importContext($this->importTable(), ['name' => 'Projects', 'nodes' => [['id' => 1, 'node_id' => 4, 'node_type' => 0]], 'pages' => [
+		$this->service->importContext(['name' => 'Projects', 'nodes' => [['id' => 1, 'node_id' => 4, 'node_type' => 0]], 'pages' => [
 			['id' => 1, 'page_type' => Page::TYPE_STARTPAGE, 'technical_name' => 'home'],
-		]], 4);
-	}
-
-	private function importTable(): Table {
-		$table = new Table();
-		$table->id = 40;
-		$table->setOwnership('user-1');
-		return $table;
+		]], 'user-1', [4 => 40], []);
 	}
 
 	private function buildPageContent(int $id, int $pageId, int $nodeRelId, int $order): PageContent {
@@ -726,7 +719,8 @@ final class ContextServiceTest extends TestCase {
 			[[Application::NODE_TYPE_TABLE, 77, 1], [Application::NODE_TYPE_TABLE, 78, 3], [Application::NODE_TYPE_VIEW, 90, 1]],
 			array_map(static fn (ContextNodeRelation $relation): array => [$relation->getNodeType(), $relation->getNodeId(), $relation->getPermissions()], $record['relations']),
 		);
-		self::assertSame([501, 503], $contents);
+		// the grid page's own contents, then the start page the archive lacked, holding every node
+		self::assertSame([501, 503, 501, 502, 503], $contents);
 		self::assertSame([501, 502, 503, null], array_column($record['widgets'], 5));
 	}
 
